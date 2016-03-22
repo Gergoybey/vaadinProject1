@@ -23,6 +23,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,17 +34,34 @@ import java.util.logging.Logger;
 @Widgetset("pl.adrian.pieper.biuwaw.MainWidget")
 public class MainUI extends UI {
     
+    private final Party party = new Party();
     private final BeanItemContainer<Gift> gifts = new BeanItemContainer<>(Gift.class);
+    private final BeanItem<Party> partyItem = new BeanItem<>(party);
+    private FieldGroup partyFormBinding;
     
     @Override
     protected void init(VaadinRequest vaadinRequest) {
         
         final VerticalLayout layout = new VerticalLayout();
                 
-        layout.addComponents(new HorizontalLayout(new PartyForm(),new NewGift(),createGiftEditor()),createTable());
+        Button saveButton = new Button("Zapisz");
+        saveButton.addClickListener((e) -> {
+            saveParty();
+        });
+        layout.addComponents(new HorizontalLayout(createPartyForm(),new NewGift(),createGiftEditor()),createTable(),saveButton);
         layout.setMargin(true);
         layout.setSpacing(true);
         setContent(layout);
+    }
+    
+    private void saveParty() {
+        List<Gift> allGifts = gifts.getItemIds();
+        party.addGifts(allGifts);
+        try {
+            partyFormBinding.commit();
+        } catch (FieldGroup.CommitException ex) {
+            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private Table createTable(){
@@ -61,44 +79,18 @@ public class MainUI extends UI {
         return giftsTable;
     }
     
-    private class PartyForm extends FormLayout{
-        private final BeanItem<Party> eventItem = new BeanItem<>(new Party());
-        
-        public PartyForm() {
-        
-            final FieldGroup fieldGroup = new FieldGroup(eventItem);
-            
-            
-            addComponents(
-                    new Label("Nowe wydarzenie"),
-                    fieldGroup.buildAndBind("Nazwa wydarzenia","name")
-            );
-            setImmediate(true);
-            fieldGroup.setBuffered(true);
-            setMargin(true);
-        }
+    private AbstractComponent createPartyForm(){
+        FormLayout partyForm = new FormLayout();
+        partyFormBinding = new FieldGroup(partyItem);
+        partyForm.addComponents(
+            new Label("Nowe wydarzenie"),
+            partyFormBinding.buildAndBind("Nazwa wydarzenia","name")
+        );
+        partyFormBinding.setBuffered(true);
+        partyForm.setMargin(true);
+        return partyForm;
     }
-    
-    private class PersonForm extends VerticalLayout{
-        private final BeanItem<Person> personItem = new BeanItem<>(new Person());
-
-        public PersonForm() {
-        
-            final FormLayout formLayout = new FormLayout();
-            final FieldGroup fieldGroup = new FieldGroup(personItem);
             
-            formLayout.addComponents(
-                    fieldGroup.buildAndBind("name"),
-                    fieldGroup.buildAndBind("Nazwisko","surName")
-            );
-            
-            fieldGroup.setBuffered(true);
-            
-            addComponent(formLayout);
-            setMargin(true);
-        }
-    }
-    
     final FieldGroup editedGift = new FieldGroup(new BeanItem<>(new Gift()));
 
     private AbstractComponent createGiftEditor(){
@@ -152,6 +144,7 @@ public class MainUI extends UI {
                         Gift newGift = newGiftBeanItem.getBean();
                         gifts.addBean(new Gift(newGift));
                         
+                        
                     } catch (FieldGroup.CommitException ex) {
                         Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -164,6 +157,7 @@ public class MainUI extends UI {
     @WebServlet(urlPatterns = "/*", name = "MainUIServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = MainUI.class, productionMode = false)
     public static class MainUIServlet extends VaadinServlet {
+        
     }
     
     
