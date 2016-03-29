@@ -5,7 +5,6 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.Widgetset;
-import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
@@ -15,28 +14,25 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- */
 @Theme("maintheme")
 @Widgetset("pl.adrian.pieper.biuwaw.MainWidget")
 public class MainUI extends UI {
     
     private final Party party = new Party();
     private final BeanItemContainer<Gift> gifts = new BeanItemContainer<>(Gift.class);
+    private final BeanItemContainer<Guest> guests = new BeanItemContainer<>(Guest.class);
     private final BeanItem<Party> partyItem = new BeanItem<>(party);
+    private final FieldGroup editedGift = new FieldGroup(new BeanItem<>(new Gift()));
     private FieldGroup partyFormBinding;
     
     @Override
@@ -48,7 +44,13 @@ public class MainUI extends UI {
         saveButton.addClickListener((e) -> {
             saveParty();
         });
-        layout.addComponents(new HorizontalLayout(createPartyForm(),new NewGift(),createGiftEditor()),createTable(),saveButton);
+        HorizontalLayout tables = new HorizontalLayout(createGiftsTable(),createGuestsTable());
+        tables.setSizeFull();
+        layout.addComponents(
+                new HorizontalLayout(createPartyForm(),new NewGift(),createGiftEditor(),createNewGuestForm()),
+                tables,
+                saveButton
+        );
         layout.setMargin(true);
         layout.setSpacing(true);
         setContent(layout);
@@ -64,7 +66,14 @@ public class MainUI extends UI {
         }
     }
     
-    private Table createTable(){
+    private Table createGuestsTable(){
+        final Table guestsTable = new Table("Goście", guests);
+        guestsTable.setColumnHeader("email", "adres e-mail");
+        guestsTable.setSizeFull();
+        return guestsTable;
+    }
+    
+    private Table createGiftsTable(){
         
         final Table giftsTable = new Table("Gifts", gifts);
         giftsTable.setColumnHeader("name", "Nazwa");
@@ -90,9 +99,34 @@ public class MainUI extends UI {
         partyForm.setMargin(true);
         return partyForm;
     }
-            
-    final FieldGroup editedGift = new FieldGroup(new BeanItem<>(new Gift()));
+    
+    private AbstractComponent createNewGuestForm(){
+        final FormLayout newGuestForm = new FormLayout();
+        final Guest guest = new Guest();
+        final FieldGroup fieldGroup = new FieldGroup(new BeanItem(guest));
+        fieldGroup.setBuffered(false);
+        final Button addButton = new Button("Add");
+        addButton.addClickListener(new Button.ClickListener() {
 
+            @Override
+            public void buttonClick(ClickEvent event) {
+                try {
+                    fieldGroup.commit();
+                    guests.addBean(new Guest(guest));
+                } catch (FieldGroup.CommitException ex) {
+                    Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        newGuestForm.addComponents(
+            new Label(),
+            fieldGroup.buildAndBind("adres e-mail","email"),
+            addButton
+        );
+        
+        return newGuestForm;
+    }
+            
     private AbstractComponent createGiftEditor(){
         final FormLayout formLayout = new FormLayout();
         editedGift.setBuffered(false);
@@ -117,7 +151,6 @@ public class MainUI extends UI {
         formLayout.setMargin(true);
             
         return formLayout;
-        
     }
     
     private class NewGift extends FormLayout{
@@ -126,7 +159,6 @@ public class MainUI extends UI {
         public NewGift() {
         
             final FieldGroup fieldGroup = new FieldGroup(newGiftBeanItem);
-            
             
             addComponents(
                     new Label("Nowy prezent"),
@@ -143,8 +175,6 @@ public class MainUI extends UI {
                         fieldGroup.commit();
                         Gift newGift = newGiftBeanItem.getBean();
                         gifts.addBean(new Gift(newGift));
-                        
-                        
                     } catch (FieldGroup.CommitException ex) {
                         Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
