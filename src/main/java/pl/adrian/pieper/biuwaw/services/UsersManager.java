@@ -5,6 +5,7 @@
  */
 package pl.adrian.pieper.biuwaw.services;
 
+import com.vaadin.ui.TextField;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.auth.login.AccountException;
@@ -30,14 +31,26 @@ public class UsersManager {
         
         if (users.containsKey(email))
             return users.get(email);
-        User user = new User(email);
-        users.put(email, user);
-        return user;
+        return createFor(email);
     }
     
     public User login(String email) throws LoginException{
         if (users.containsKey(email))
             return users.get(email);
         throw new LoginException("Użytkownik nie istnieje");
+    }
+
+    public User register(String email) throws LoginException{
+        if (users.containsKey(email)){
+            throw new LoginException("Użytkownik już istnieje");
+        }
+        return createFor(email);
+    }
+
+    private User createFor(String email) {
+        
+        User user = new User(email);
+        users.put(email, user);
+        return user;
     }
 }

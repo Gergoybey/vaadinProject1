@@ -13,6 +13,10 @@ public class User {
     private String email;
 
     public User(String email) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.email = email;
+    }
+ 
+    public String getName() {
+        return email;
     }
 }
