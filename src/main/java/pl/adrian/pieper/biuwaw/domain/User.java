@@ -5,18 +5,30 @@
  */
 package pl.adrian.pieper.biuwaw.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Adi
  */
 public class User {
     private String email;
-
+    private List<Party> invitations = new ArrayList<>();
+    
     public User(String email) {
         this.email = email;
+    }
+    
+    public void invite(Party party){
+        invitations.add(party);
     }
  
     public String getName() {
         return email;
+    }
+
+    public List<Party> getInvitations() {
+        return new ArrayList<>(invitations);
     }
 }

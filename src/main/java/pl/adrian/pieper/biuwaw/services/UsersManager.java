@@ -5,10 +5,8 @@
  */
 package pl.adrian.pieper.biuwaw.services;
 
-import com.vaadin.ui.TextField;
 import java.util.HashMap;
 import java.util.Map;
-import javax.security.auth.login.AccountException;
 import javax.security.auth.login.LoginException;
 import pl.adrian.pieper.biuwaw.domain.Guest;
 import pl.adrian.pieper.biuwaw.domain.User;
@@ -24,6 +22,11 @@ public class UsersManager {
 
     public static UsersManager getInstance() {
         return instance;
+    }
+    
+    static
+    {
+        instance.createFor("login");
     }
         
     public User getFor(Guest guest){

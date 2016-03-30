@@ -9,16 +9,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- *
- * @author Adi
- */
 public class Party {
-    private String name;
-    private List<Gift> gifts;
-    private List<Guest> guests;
+    private final long id;
+    private final String name;
+    private final List<Gift> gifts;
+    private final List<Guest> guests;
 
-    public Party(String name, List<Gift> gifts, List<Guest> guests) {
+    public Party(long id, String name, List<Gift> gifts, List<Guest> guests) {
+        this.id = id;
         this.name = name;
         this.gifts = new ArrayList<>(gifts);
         this.guests = new ArrayList<>(guests);
@@ -28,13 +26,29 @@ public class Party {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Collection<? extends Gift> getGifts() {
+        return new ArrayList<>(gifts);
     }
 
-    public void addGifts(Collection<? extends Gift> allGifts) {
-        gifts = new ArrayList<>(allGifts);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Party other = (Party) obj;
+        return (this.id == other.id);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + (int) (this.id ^ (this.id >>> 32));
+        return hash;
+    }
+    
     
     
 }
