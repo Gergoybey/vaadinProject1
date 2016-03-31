@@ -13,8 +13,8 @@ import java.util.List;
  * @author Adi
  */
 public class User {
-    private String email;
-    private List<Party> invitations = new ArrayList<>();
+    private final String email;
+    private final List<Party> invitations = new ArrayList<>();
     
     public User(String email) {
         this.email = email;

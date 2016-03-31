@@ -48,6 +48,13 @@ public class Party {
         hash = 67 * hash + (int) (this.id ^ (this.id >>> 32));
         return hash;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+    
+    
     
     
     

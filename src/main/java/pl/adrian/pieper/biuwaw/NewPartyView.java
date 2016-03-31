@@ -14,6 +14,7 @@ import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.event.ItemClickEvent;
+import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.AbstractComponent;
@@ -28,6 +29,7 @@ import com.vaadin.ui.VerticalLayout;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import pl.adrian.pieper.biuwaw.services.UsersManager;
 
 /**
  *
@@ -42,10 +44,12 @@ public class NewPartyView extends CustomComponent implements View{
     private final TextField partNameTF = new TextField("Nazwa Wydarzenia");
 
     public NewPartyView() {
+        
     }
     
     private void saveParty(Button.ClickEvent event) {
         partyService.addParty(partNameTF.getValue(),gifts.getItemIds(),guests.getItemIds());
+        setCompositionRoot(new Label("Zapisano..."));
     }
     
     private Table createGuestsTable(){
@@ -137,21 +141,23 @@ public class NewPartyView extends CustomComponent implements View{
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-        
-        final VerticalLayout rootLayout = new VerticalLayout();
-                
-        Button saveButton = new Button("Zapisz");
-        saveButton.addClickListener(this::saveParty);
-        
-        rootLayout.addComponents(
-                createPartyForm(),
-                createGiftView(),
-                createGuestsView(),
-                saveButton
-        );
-        rootLayout.setMargin(true);
-        rootLayout.setSpacing(true);
-        setCompositionRoot(rootLayout);
+        if (UsersManager.getInstance().isUserOnline()){
+            final VerticalLayout rootLayout = new VerticalLayout();
+
+            Button saveButton = new Button("Zapisz");
+            saveButton.addClickListener(this::saveParty);
+
+            rootLayout.addComponents(
+                    new Label(UsersManager.getInstance().getUser().getName()),
+                    createPartyForm(),
+                    createGiftView(),
+                    createGuestsView(),
+                    saveButton
+            );
+            rootLayout.setMargin(true);
+            rootLayout.setSpacing(true);
+            setCompositionRoot(rootLayout);
+        }
     }
     
     private class NewGift extends FormLayout{

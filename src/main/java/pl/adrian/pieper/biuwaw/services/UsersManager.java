@@ -5,6 +5,7 @@
  */
 package pl.adrian.pieper.biuwaw.services;
 
+import com.vaadin.server.VaadinSession;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.auth.login.LoginException;
@@ -20,6 +21,14 @@ public class UsersManager {
     
     private final static UsersManager instance = new UsersManager();
 
+    public boolean isUserOnline(){
+        return getUser() != null;
+    }
+    
+    public User getUser() {
+        return VaadinSession.getCurrent().getAttribute(User.class);
+    }
+        
     public static UsersManager getInstance() {
         return instance;
     }
@@ -27,6 +36,7 @@ public class UsersManager {
     static
     {
         instance.createFor("login");
+        instance.createFor("admin");
     }
         
     public User getFor(Guest guest){
@@ -38,8 +48,11 @@ public class UsersManager {
     }
     
     public User login(String email) throws LoginException{
-        if (users.containsKey(email))
-            return users.get(email);
+        if (users.containsKey(email)){
+            User user = users.get(email);
+            VaadinSession.getCurrent().setAttribute(User.class, user);
+            return user;
+        }
         throw new LoginException("Użytkownik nie istnieje");
     }
 

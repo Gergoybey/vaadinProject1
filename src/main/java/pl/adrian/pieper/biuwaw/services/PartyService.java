@@ -21,7 +21,7 @@ import pl.adrian.pieper.biuwaw.domain.User;
 
 public class PartyService {
 
-    private static PartyService instance = new PartyService();
+    private static final PartyService instance = new PartyService();
     
     private final List<Party> parties = new ArrayList<>();
     private final UsersManager usersManager = UsersManager.getInstance();
@@ -33,7 +33,7 @@ public class PartyService {
         
         Gift gift = new Gift();
         gift.setName("Ser");
-        instance.addParty("Impreza", Arrays.asList(gift),Arrays.asList(guest));
+        instance.addParty("Gruba Biba", Arrays.asList(gift),Arrays.asList(guest));
     }
     
     private PartyService() {
