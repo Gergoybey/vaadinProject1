@@ -15,6 +15,7 @@ import java.util.List;
 public class User {
     private final String email;
     private final List<Party> invitations = new ArrayList<>();
+    private final List<Gift> gifts = new ArrayList<>();
     
     public User(String email) {
         this.email = email;
@@ -31,4 +32,23 @@ public class User {
     public List<Party> getInvitations() {
         return new ArrayList<>(invitations);
     }
+
+    public void remove(Gift gift) {
+        gifts.remove(gift);
+        gift.setStatus(Gift.Status.FREE);
+        gift.setBuyer(null);
+    }
+
+    public void add(Gift gift) {
+        gifts.add(gift);
+        gift.setBuyer(this);
+        gift.setStatus(Gift.Status.HAS_BUYER);
+    }
+
+    @Override
+    public String toString() {
+        return email;
+    }
+    
+    
 }

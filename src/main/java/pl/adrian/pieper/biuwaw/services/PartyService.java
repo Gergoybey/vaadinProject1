@@ -7,7 +7,6 @@ package pl.adrian.pieper.biuwaw.services;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import pl.adrian.pieper.biuwaw.domain.Gift;
 import pl.adrian.pieper.biuwaw.domain.Guest;
@@ -21,8 +20,7 @@ import pl.adrian.pieper.biuwaw.domain.User;
 
 public class PartyService {
 
-    private static final PartyService instance = new PartyService();
-    
+    private static final PartyService instance = new PartyService();    
     private final List<Party> parties = new ArrayList<>();
     private final UsersManager usersManager = UsersManager.getInstance();
     
@@ -30,10 +28,12 @@ public class PartyService {
     {
         Guest guest = new Guest();
         guest.setEmail("login");
+        Guest guest2 = new Guest();
+        guest2.setEmail("admin");
         
         Gift gift = new Gift();
         gift.setName("Ser");
-        instance.addParty("Gruba Biba", Arrays.asList(gift),Arrays.asList(guest));
+        instance.addParty("Gruba Biba", Arrays.asList(gift),Arrays.asList(guest,guest2));
     }
     
     private PartyService() {
@@ -50,10 +50,19 @@ public class PartyService {
             User user = usersManager.getFor(guest);
             user.invite(party);
         }
+        Dispatcher.getInstance().broadcast("NEW_INVITE");
     }
 
     public List<Party> getAllParties() {
         return new ArrayList<>(parties);
+    }
+
+    public Party getById(long id) {
+        for (Party party : parties) {
+            if (party.getId() == id)
+                return party;
+        }
+        return null;
     }
     
     

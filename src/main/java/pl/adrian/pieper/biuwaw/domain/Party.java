@@ -53,6 +53,10 @@ public class Party {
     public String toString() {
         return name;
     }
+
+    public long getId() {
+        return id;
+    }
     
     
     

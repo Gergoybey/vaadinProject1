@@ -42,8 +42,11 @@ public class MainUI extends UI {
         
     @Override
     protected void init(VaadinRequest vaadinRequest) {
-        
-        setContent(new LoginView());
+        if (usersManager.isUserOnline()){
+            setContent(new UserPanel(this));
+        }else{
+            setContent(new LoginView());
+        }
     }
     
     private void login(String username)  { 

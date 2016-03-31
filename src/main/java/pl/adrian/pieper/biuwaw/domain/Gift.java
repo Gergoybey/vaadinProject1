@@ -13,17 +13,29 @@ import java.util.Objects;
  */
 public class Gift {
     private String name;
-
+    private User buyer;
+    private Status status = Status.FREE;
+    private Party party;
+    
     public Gift(){
         name = "NO_NAME";
     }
     
     public Gift(Gift newGift) {
         name = newGift.name;
+        buyer = newGift.buyer;
+        status = newGift.status;
+        party = newGift.party;
     }
 
-    
-    
+    public Party getParty() {
+        return party;
+    }
+
+    public void setParty(Party party) {
+        this.party = party;
+    }
+
     public String getName() {
         return name;
     }
@@ -32,22 +44,26 @@ public class Gift {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Gift other = (Gift) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
+    public User getBuyer() {
+        return buyer;
     }
-    
-    
-    
-    
+
+    public void setBuyer(User buyer) {
+        this.buyer = buyer;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        if (status == Status.BOUGHT){
+            buyer.remove(this);
+        }
+        this.status = status;
+    }    
+        
+    public enum Status{
+        HAS_BUYER, FREE, BOUGHT;
+    }
 }
