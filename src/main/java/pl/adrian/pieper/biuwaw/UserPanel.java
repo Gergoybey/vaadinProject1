@@ -11,6 +11,7 @@ import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CustomComponent;
@@ -57,22 +58,28 @@ class UserPanel extends CustomComponent implements Dispatcher.BroadcastListener{
             PartyService.getInstance(); // To remove
             userLabel.setValue(manager.getUser().getName());
             comboBox.addItems(manager.getUser().getInvitations());
-            AbstractLayout root = new VerticalLayout();
+            VerticalLayout root = new VerticalLayout();
             Navigator.EmptyView emptyView = new Navigator.EmptyView();
-            root.setSizeFull();
-            emptyView.setSizeFull();
-            root.addComponents(new HorizontalLayout(userLabel, newPartyButton, comboBox), emptyView);
+            HorizontalLayout userMenu = new HorizontalLayout(userLabel, newPartyButton, comboBox);
+            emptyView.setWidth(80, Unit.PERCENTAGE);
+            emptyView.setHeightUndefined();
+            root.addComponents(userMenu, emptyView);
+            root.setComponentAlignment(userMenu, Alignment.MIDDLE_CENTER);
+            root.setComponentAlignment(emptyView, Alignment.MIDDLE_CENTER);
             newPartyButton.addClickListener((com.vaadin.ui.Button.ClickEvent event) -> {
                 userNavigator.navigateTo(MainUI.NEW_PARTY);
             });
             comboBox.setCaption("Imprezy");
             comboBox.addValueChangeListener((com.vaadin.data.Property.ValueChangeEvent event) -> {
-                Party party = (Party) comboBox.getValue();
-                userNavigator.navigateTo(MainUI.PARTY+"/"+party.getId());
+                if (comboBox.getValue() instanceof Party){
+                    Party party = (Party) comboBox.getValue();
+                    userNavigator.navigateTo(MainUI.PARTY+"/"+party.getId());
+                }
             });
             this.userNavigator = new Navigator(mainUI, emptyView);
-            userNavigator.addView("", NewPartyView.class);
-            userNavigator.addView(NEW_PARTY, new NewPartyView());
+            final NewPartyView newPartyView = new NewPartyView(userNavigator);
+            userNavigator.addView("", new Navigator.EmptyView());
+            userNavigator.addView(NEW_PARTY, newPartyView);
             partyView = new PartyView();
             userNavigator.addView(PARTY, partyView);
             setCompositionRoot(root);
@@ -81,18 +88,12 @@ class UserPanel extends CustomComponent implements Dispatcher.BroadcastListener{
 
     @Override
     public void receiveBroadcast(String message) {
-        mainUI.access(new Runnable() {
-
-            @Override
-            public void run() {
-                
-                if (message.equals("NEW_INVITE")){
-                    comboBox.removeAllItems();
-                    comboBox.addItems(manager.getUser().getInvitations());
-                }else if (message.equals("GIFT_STATUS")){
-                    partyView.reloadGifts();;
-                }
-        
+        mainUI.access(() -> {
+            if (message.equals("NEW_INVITE")){
+                comboBox.removeAllItems();
+                comboBox.addItems(manager.getUser().getInvitations());
+            }else if (message.equals("GIFT_STATUS")){
+                partyView.reloadGifts();;
             }
         });
         
@@ -108,24 +109,32 @@ class UserPanel extends CustomComponent implements Dispatcher.BroadcastListener{
             final Table partyGiftsTable = new Table("Prezenty", partyGifts);
             partyGiftsTable.setColumnHeader("name", "Nazwa");
             partyGiftsTable.setColumnHeader("status", "Status");
+            partyGiftsTable.setColumnHeader("buyer", "Kupujący");
             partyGifts.removeContainerProperty("party");
             partyGiftsTable.addItemClickListener(this::partyGiftClick);
-            
+            partyGiftsTable.setWidth(70, Unit.PERCENTAGE);
             final Table userGiftsTable = new Table("Zakupy", userGifts);
             userGifts.removeContainerProperty("party");
             userGifts.removeContainerProperty("buyer");
+            userGifts.removeContainerProperty("status");
             userGiftsTable.addItemClickListener(this::userGiftClick);
-            setCompositionRoot(new HorizontalLayout(partyGiftsTable,userGiftsTable));
+            userGiftsTable.setWidth(30, Unit.PERCENTAGE);
+            HorizontalLayout horizontalLayout = new HorizontalLayout(partyGiftsTable,userGiftsTable);
+            horizontalLayout.setSizeFull();
+            horizontalLayout.setComponentAlignment(partyGiftsTable, Alignment.MIDDLE_CENTER);
+            horizontalLayout.setComponentAlignment(userGiftsTable, Alignment.MIDDLE_CENTER);
+            setCompositionRoot(horizontalLayout);
         }
 
         private void remove(Gift gift){
-            userGifts.removeItem(gift);
             manager.getUser().remove(gift);
             Dispatcher.getInstance().broadcast("GIFT_STATUS");
         }
         
         public void userGiftClick(ItemClickEvent event) {
-            remove((Gift) event.getItemId());
+            Gift gift = (Gift) event.getItemId();
+            manager.getUser().buy(gift);
+            Dispatcher.getInstance().broadcast("GIFT_STATUS");
         }
         
         public void partyGiftClick(ItemClickEvent event) {
@@ -142,13 +151,15 @@ class UserPanel extends CustomComponent implements Dispatcher.BroadcastListener{
         @Override
         public void enter(ViewChangeListener.ViewChangeEvent event) {
             party = PartyService.getInstance().getById(Long.parseLong(event.getParameters()));
-            partyGifts.addAll(party.getGifts());
+            reloadGifts();
         }
         
         void reloadGifts(){
             if (isAttached()){
                 partyGifts.removeAllItems();
                 partyGifts.addAll(party.getGifts());
+                userGifts.removeAllItems();
+                userGifts.addAll(manager.getUser().getGifts());
             }
         }
     }    

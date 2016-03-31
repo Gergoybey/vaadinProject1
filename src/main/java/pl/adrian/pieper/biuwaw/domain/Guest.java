@@ -12,6 +12,10 @@ package pl.adrian.pieper.biuwaw.domain;
 public class Guest {
     private String email;
 
+    public Guest(User user) {
+        email = user.getEmail();
+    }
+    
     public Guest(Guest guest) {
         email = guest.email;
     }

@@ -12,6 +12,7 @@ import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.ItemClickEvent;
+import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.AbstractComponent;
@@ -38,14 +39,29 @@ public class NewPartyView extends CustomComponent implements View{
     private final BeanItemContainer<Guest> guests = new BeanItemContainer<>(Guest.class);
     private final FieldGroup editedGift = new FieldGroup(new BeanItem<>(new Gift()));
     private final TextField partNameTF = new TextField("Nazwa Wydarzenia");
+    private final Navigator navigator;
+    public NewPartyView(Navigator navigator) {
+        this.navigator = navigator;
+        final VerticalLayout rootLayout = new VerticalLayout();
 
-    public NewPartyView() {
+        Button saveButton = new Button("Zapisz");
+        saveButton.addClickListener(this::saveParty);
+        guests.addBean(new Guest(UsersManager.getInstance().getUser()));
+        rootLayout.addComponents(
+                createPartyForm(),
+                createGiftView(),
+                createGuestsView(),
+                saveButton
+        );
+        rootLayout.setMargin(true);
+        rootLayout.setSpacing(true);
+        setCompositionRoot(rootLayout);
         
     }
     
     private void saveParty(Button.ClickEvent event) {
         partyService.addParty(partNameTF.getValue(),gifts.getItemIds(),guests.getItemIds());
-        setCompositionRoot(new Label("Zapisano..."));
+        navigator.navigateTo("");
     }
     
     private Table createGuestsTable(){
@@ -72,6 +88,9 @@ public class NewPartyView extends CustomComponent implements View{
         final Table giftsTable = new Table("Gifts", gifts);
         giftsTable.setColumnHeader("name", "Nazwa");
         giftsTable.setSizeFull();
+        giftsTable.removeContainerProperty("buyer");
+        giftsTable.removeContainerProperty("party");
+        giftsTable.removeContainerProperty("status");
         giftsTable.addItemClickListener(this::itemClick);
         return giftsTable;
     }
@@ -137,23 +156,10 @@ public class NewPartyView extends CustomComponent implements View{
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-        if (UsersManager.getInstance().isUserOnline()){
-            final VerticalLayout rootLayout = new VerticalLayout();
-
-            Button saveButton = new Button("Zapisz");
-            saveButton.addClickListener(this::saveParty);
-
-            rootLayout.addComponents(
-                    new Label(UsersManager.getInstance().getUser().getName()),
-                    createPartyForm(),
-                    createGiftView(),
-                    createGuestsView(),
-                    saveButton
-            );
-            rootLayout.setMargin(true);
-            rootLayout.setSpacing(true);
-            setCompositionRoot(rootLayout);
-        }
+        editedGift.setItemDataSource(null);
+        gifts.removeAllItems();
+        guests.removeAllItems();
+        guests.addBean(new Guest(UsersManager.getInstance().getUser()));
     }
     
     private class NewGift extends FormLayout{

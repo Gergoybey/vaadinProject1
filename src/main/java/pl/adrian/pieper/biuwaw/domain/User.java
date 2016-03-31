@@ -6,6 +6,7 @@
 package pl.adrian.pieper.biuwaw.domain;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,6 +34,13 @@ public class User {
         return new ArrayList<>(invitations);
     }
 
+    
+    public void buy(Gift gift) {
+        gifts.remove(gift);
+        gift.setStatus(Gift.Status.BOUGHT);
+        gift.setBuyer(null);
+    }
+    
     public void remove(Gift gift) {
         gifts.remove(gift);
         gift.setStatus(Gift.Status.FREE);
@@ -49,6 +57,16 @@ public class User {
     public String toString() {
         return email;
     }
+
+    public Collection<? extends Gift> getGifts() {
+        return new ArrayList<>(gifts);
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    
     
     
 }
