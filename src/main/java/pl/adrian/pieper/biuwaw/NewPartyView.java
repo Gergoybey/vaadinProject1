@@ -11,6 +11,7 @@ import pl.adrian.pieper.biuwaw.services.PartyService;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
@@ -18,6 +19,7 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -115,16 +117,19 @@ public class NewPartyView extends CustomComponent implements View{
             @Override
             public void buttonClick(Button.ClickEvent event) {
                 try {
-                    fieldGroup.commit();
-                    guests.addBean(new Guest(guest));
+                    if (fieldGroup.isValid()){
+                        fieldGroup.commit();
+                        guests.addBean(new Guest(guest));
+                    }
                 } catch (FieldGroup.CommitException ex) {
                     Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
-        newGuestForm.addComponents(
-            new Label(),
-            fieldGroup.buildAndBind("adres e-mail","email"),
+        final Field<?> emailfield = fieldGroup.buildAndBind("adres e-mail","email");
+        emailfield.addValidator(new EmailValidator("Nieprawidlowy adres e-mail"));
+        emailfield.setRequired(true);
+        newGuestForm.addComponents(new Label(), emailfield,
             addButton
         );
         

@@ -6,26 +6,17 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.Widgetset;
-import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.navigator.Navigator;
-import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.data.Validator;
+import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
-import pl.adrian.pieper.biuwaw.domain.Gift;
-import pl.adrian.pieper.biuwaw.domain.Party;
 import pl.adrian.pieper.biuwaw.services.UsersManager;
 
 @Push
@@ -42,6 +33,7 @@ public class MainUI extends UI {
         
     @Override
     protected void init(VaadinRequest vaadinRequest) {
+        
         if (usersManager.isUserOnline()){
             setContent(new UserPanel(this));
         }else{
@@ -66,6 +58,11 @@ public class MainUI extends UI {
         public LoginView() {
         
             addComponents(emailTF,loginButton,newAccountButton);
+            
+            setWidth(256, Unit.PIXELS);
+            loginButton.setSizeFull();
+            newAccountButton.setSizeFull();
+            emailTF.setSizeFull();
             loginButton.addClickListener(this::loggin);
             newAccountButton.addClickListener((e)->{
                 setContent(new RegisterView());
@@ -85,6 +82,14 @@ public class MainUI extends UI {
 
         public RegisterView() {
             addComponents(emailTF,button);
+            emailTF.setCaption("Adres e-mail");
+            emailTF.addValidator(new EmailValidator("Nieprawidlowy adres e-mail"));
+            emailTF.setRequired(true);
+            
+            setWidth(256, Unit.PIXELS);
+            button.setSizeFull();
+            emailTF.setSizeFull();
+            
             button.addClickListener(this::register);
         }
 
@@ -93,9 +98,11 @@ public class MainUI extends UI {
         private void register(Button.ClickEvent event){
             
             try {
+                
+                emailTF.validate();
                 usersManager.register(emailTF.getValue());
                 login(emailTF.getValue());
-            } catch (LoginException ex) {
+            } catch (Validator.InvalidValueException | LoginException ex) {
                 Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }     

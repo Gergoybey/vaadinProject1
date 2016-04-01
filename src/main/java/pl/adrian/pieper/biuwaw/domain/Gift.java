@@ -18,7 +18,7 @@ public class Gift {
     private Party party;
     
     public Gift(){
-        name = "NO_NAME";
+        name = "";
     }
     
     public Gift(Gift newGift) {

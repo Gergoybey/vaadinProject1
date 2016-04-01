@@ -61,6 +61,10 @@ class UserPanel extends CustomComponent implements Dispatcher.BroadcastListener{
             VerticalLayout root = new VerticalLayout();
             Navigator.EmptyView emptyView = new Navigator.EmptyView();
             HorizontalLayout userMenu = new HorizontalLayout(userLabel, newPartyButton, comboBox);
+            userMenu.setWidth(40, Unit.PERCENTAGE);
+            userMenu.setComponentAlignment(userLabel, Alignment.MIDDLE_CENTER);
+            userMenu.setComponentAlignment(newPartyButton, Alignment.MIDDLE_CENTER);
+            userMenu.setComponentAlignment(comboBox, Alignment.MIDDLE_CENTER);
             emptyView.setWidth(80, Unit.PERCENTAGE);
             emptyView.setHeightUndefined();
             root.addComponents(userMenu, emptyView);
